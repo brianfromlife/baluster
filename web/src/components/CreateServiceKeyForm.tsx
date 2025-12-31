@@ -45,10 +45,7 @@ export function CreateServiceKeyForm() {
     enabled: !!organization?.id,
   });
 
-  const applications = useMemo(() => {
-    return applicationsResponse?.applications || [];
-  }, [applicationsResponse?.applications]);
-
+  const applications = applicationsResponse?.applications || [];
   const hasApplications = applications.length > 0;
 
   const filteredApplications = useMemo(() => {

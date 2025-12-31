@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -44,11 +44,7 @@ export function CreateApiKeyForm() {
     enabled: !!organization?.id,
   });
 
-  // Memoize applications to avoid creating new array reference on every render
-  const applications = useMemo(() => {
-    return applicationsResponse?.applications || [];
-  }, [applicationsResponse?.applications]);
-
+  const applications = applicationsResponse?.applications || [];
   const hasApplications = applications.length > 0;
 
   const createMutation = useMutation({
@@ -224,7 +220,9 @@ export function CreateApiKeyForm() {
               disabled={createMutation.isPending}
               min={new Date().toISOString().split("T")[0]}
             />
-            <p className={styles.formHint}>Leave empty for no expiration. Default: 1 year from today.</p>
+            <p className={styles.formHint}>
+              Leave empty for no expiration. Default: 1 year from today.
+            </p>
           </div>
 
           {error && <div className={styles.formError}>{error}</div>}

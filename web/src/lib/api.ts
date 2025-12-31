@@ -17,7 +17,6 @@ apiClient.interceptors.request.use((config) => {
     config.headers.Authorization = `Bearer ${token}`;
   }
 
-  // Add organization ID header for admin routes (skip for /me and POST /organizations)
   const url = config.url || "";
   const isAdminRoute = url.startsWith("/admin/v1") || url.startsWith("admin/v1");
   const shouldSkipOrgHeader =
@@ -119,8 +118,6 @@ export interface UserResponse {
   organization?: Organization;
 }
 
-export interface OrganizationResponse extends Organization {}
-
 export interface OrganizationListResponse {
   organizations: Organization[];
 }
@@ -134,8 +131,6 @@ export interface Application {
   created_at: string;
   updated_at: string;
 }
-
-export interface ApplicationResponse extends Application {}
 
 export interface ApplicationListResponse {
   applications: Application[];
@@ -254,8 +249,8 @@ export const api = {
       return response.data;
     },
 
-    create: async (data: CreateOrganizationRequest): Promise<OrganizationResponse> => {
-      const response = await apiClient.post<OrganizationResponse>("/admin/v1/organizations", data);
+    create: async (data: CreateOrganizationRequest): Promise<Organization> => {
+      const response = await apiClient.post<Organization>("/admin/v1/organizations", data);
       return response.data;
     },
   },
@@ -271,15 +266,13 @@ export const api = {
       return response.data;
     },
 
-    create: async (data: CreateApplicationRequest): Promise<ApplicationResponse> => {
-      const response = await apiClient.post<ApplicationResponse>("/admin/v1/applications", data);
+    create: async (data: CreateApplicationRequest): Promise<Application> => {
+      const response = await apiClient.post<Application>("/admin/v1/applications", data);
       return response.data;
     },
 
-    get: async (applicationId: string): Promise<ApplicationResponse> => {
-      const response = await apiClient.get<ApplicationResponse>(
-        `/admin/v1/applications/${applicationId}`
-      );
+    get: async (applicationId: string): Promise<Application> => {
+      const response = await apiClient.get<Application>(`/admin/v1/applications/${applicationId}`);
       return response.data;
     },
 
@@ -290,11 +283,8 @@ export const api = {
       return response.data;
     },
 
-    update: async (
-      applicationId: string,
-      data: UpdateApplicationRequest
-    ): Promise<ApplicationResponse> => {
-      const response = await apiClient.put<ApplicationResponse>(
+    update: async (applicationId: string, data: UpdateApplicationRequest): Promise<Application> => {
+      const response = await apiClient.put<Application>(
         `/admin/v1/applications/${applicationId}`,
         data
       );
@@ -317,8 +307,8 @@ export const api = {
   },
 
   serviceKeys: {
-    list: async (organizationId: string): Promise<ServiceKeyListResponse | ServiceKey[]> => {
-      const response = await apiClient.get<ServiceKeyListResponse | ServiceKey[]>(
+    list: async (organizationId: string): Promise<ServiceKey[]> => {
+      const response = await apiClient.get<ServiceKey[]>(
         `/admin/v1/organizations/${organizationId}/service-keys`,
         {
           headers: { "x-org-id": organizationId },
@@ -348,8 +338,8 @@ export const api = {
   },
 
   apiKeys: {
-    list: async (organizationId: string): Promise<ApiKeyListResponse | ApiKey[]> => {
-      const response = await apiClient.get<ApiKeyListResponse | ApiKey[]>(
+    list: async (organizationId: string): Promise<ApiKey[]> => {
+      const response = await apiClient.get<ApiKey[]>(
         `/admin/v1/organizations/${organizationId}/api-keys`,
         {
           headers: { "x-org-id": organizationId },
