@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log/slog"
 	"net/http"
 	"time"
 
@@ -15,7 +14,6 @@ import (
 	"golang.org/x/oauth2/github"
 )
 
-// GitHubConfig holds GitHub OAuth configuration
 type GitHubConfig struct {
 	ClientID     string
 	ClientSecret string
@@ -23,7 +21,6 @@ type GitHubConfig struct {
 	Scopes       []string
 }
 
-// GitHubUser represents a GitHub user
 type GitHubUser struct {
 	ID        int    `json:"id"`
 	Login     string `json:"login"`
@@ -54,45 +51,26 @@ func GenerateState() (string, error) {
 
 // GetGitHubUser fetches the authenticated user from GitHub
 func GetGitHubUser(ctx context.Context, client *http.Client) (*GitHubUser, error) {
-	logger := slog.Default()
-
-	logger.Info("creating request to GitHub API")
 	req, err := http.NewRequestWithContext(ctx, "GET", "https://api.github.com/user", nil)
 	if err != nil {
-		logger.Error("failed to create GitHub API request", "error", err)
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
 
-	logger.Info("sending request to GitHub API")
 	resp, err := client.Do(req)
 	if err != nil {
-		logger.Error("failed to send request to GitHub API", "error", err)
 		return nil, fmt.Errorf("failed to fetch user: %w", err)
 	}
 	defer resp.Body.Close()
 
-	logger.Info("GitHub API response received", "status_code", resp.StatusCode)
 	if resp.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(resp.Body)
-		logger.Error("GitHub API returned error",
-			"status_code", resp.StatusCode,
-			"body", string(body),
-		)
 		return nil, fmt.Errorf("github API error: status %d, body: %s", resp.StatusCode, string(body))
 	}
 
-	logger.Info("decoding GitHub user response")
 	var user GitHubUser
 	if err := json.NewDecoder(resp.Body).Decode(&user); err != nil {
-		logger.Error("failed to decode GitHub user response", "error", err)
 		return nil, fmt.Errorf("failed to decode user: %w", err)
 	}
-
-	logger.Info("GitHub user decoded successfully",
-		"id", user.ID,
-		"login", user.Login,
-		"email", user.Email,
-	)
 
 	return &user, nil
 }

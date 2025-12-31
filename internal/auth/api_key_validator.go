@@ -6,12 +6,10 @@ import (
 	"github.com/brianfromlife/baluster/internal/storage"
 )
 
-// ApiKeyValidator validates API keys used to call Baluster APIs
 type ApiKeyValidator struct {
 	apiKeyRepo *storage.ApiKeyRepository
 }
 
-// NewApiKeyValidator creates a new API key validator
 func NewApiKeyValidator(apiKeyRepo *storage.ApiKeyRepository) *ApiKeyValidator {
 	return &ApiKeyValidator{
 		apiKeyRepo: apiKeyRepo,

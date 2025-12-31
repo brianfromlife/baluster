@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log/slog"
 	"net/http"
 	"strings"
 
@@ -60,17 +59,9 @@ func JWTAuthMiddleware(cfg JWTConfig, userRepo UserGetter) func(http.Handler) ht
 			if err != nil {
 				// Check if token is expired and we can refresh it
 				if errors.Is(err, ErrTokenExpired) && claims != nil {
-					logger := slog.Default().With(
-						"user_id", claims.UserID,
-						"github_id", claims.GitHubID,
-					)
-
-					logger.Info("token expired, attempting refresh")
-
 					// Look up user to get current information
 					user, lookupErr := userRepo.GetByID(r.Context(), claims.UserID, claims.GitHubID)
 					if lookupErr != nil {
-						logger.Error("failed to lookup user for token refresh", "error", lookupErr)
 						http.Error(w, "invalid token", http.StatusUnauthorized)
 						return
 					}
@@ -78,12 +69,9 @@ func JWTAuthMiddleware(cfg JWTConfig, userRepo UserGetter) func(http.Handler) ht
 					// Generate new token
 					newToken, genErr := GenerateToken(cfg, user.ID, user.GitHubID, user.Username)
 					if genErr != nil {
-						logger.Error("failed to generate refreshed token", "error", genErr)
 						http.Error(w, "failed to refresh token", http.StatusInternalServerError)
 						return
 					}
-
-					logger.Info("token refreshed successfully")
 
 					// Set refreshed token in response header
 					w.Header().Set(TokenRefreshHeader, newToken)
@@ -218,12 +206,6 @@ func OrganizationMembershipMiddleware(memberRepo OrganizationMemberChecker, cach
 				var err error
 				isMember, err = memberRepo.IsMember(r.Context(), orgID, userID)
 				if err != nil {
-					logger := slog.Default().With(
-						"org_id", orgID,
-						"user_id", userID,
-						"error", err,
-					)
-					logger.Error("failed to check organization membership")
 					http.Error(w, "failed to validate organization membership", http.StatusInternalServerError)
 					return
 				}

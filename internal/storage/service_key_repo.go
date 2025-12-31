@@ -102,102 +102,55 @@ func (r *ServiceKeyRepository) Get(ctx context.Context, organizationID, id strin
 
 // FindByTokenValue finds a service key by its hashed value (queries across all partitions)
 func (r *ServiceKeyRepository) FindByTokenValue(ctx context.Context, tokenValue string) (*types.ServiceKey, error) {
-	logger := r.client.logger.With(
-		"function", "FindByTokenValue",
-		"token_length", len(tokenValue),
-	)
-	logger.Info("searching for service key by token value")
-
 	hashed := HashToken(tokenValue)
-	logger = logger.With("hashed_token", hashed)
-	logger.Debug("token hashed")
 
 	query := fmt.Sprintf("SELECT * FROM c WHERE c.token_value = '%s' AND (c.entity_type = 'service_key' OR NOT IS_DEFINED(c.entity_type))", hashed)
-	logger.Debug("executing query", "query", query)
 
 	queryPager := r.container.NewQueryItemsPager(query, azcosmos.NewPartitionKey(), nil)
 
-	pageCount := 0
 	for queryPager.More() {
-		pageCount++
-		logger.Debug("fetching next page", "page", pageCount)
-
 		queryResponse, err := queryPager.NextPage(ctx)
 		if err != nil {
-			logger.Error("failed to fetch query page", "error", err, "page", pageCount)
 			return nil, handleCosmosError(err)
 		}
 
-		logger.Debug("query page fetched", "page", pageCount, "item_count", len(queryResponse.Items))
-
-		for i, item := range queryResponse.Items {
+		for _, item := range queryResponse.Items {
 			var token types.ServiceKey
 			if err := json.Unmarshal(item, &token); err != nil {
-				logger.Error("failed to unmarshal token", "error", err, "item_index", i)
 				return nil, fmt.Errorf("failed to unmarshal token: %w", err)
 			}
 
-			logger.Info("service key found",
-				"service_key_id", token.ID,
-				"organization_id", token.OrganizationID,
-				"entity_type", token.EntityType,
-			)
 			return &token, nil
 		}
 	}
 
-	logger.Warn("service key not found", "total_pages", pageCount)
 	return nil, fmt.Errorf("token not found")
 }
 
 // FindByTokenValueInOrg finds a service key by its hashed value within a specific organization (more efficient)
 func (r *ServiceKeyRepository) FindByTokenValueInOrg(ctx context.Context, organizationID, tokenValue string) (*types.ServiceKey, error) {
-	logger := r.client.logger.With(
-		"function", "FindByTokenValueInOrg",
-		"organization_id", organizationID,
-		"token_length", len(tokenValue),
-	)
-	logger.Info("searching for service key by token value in organization")
-
 	hashed := HashToken(tokenValue)
-	logger = logger.With("hashed_token", hashed)
-	logger.Debug("token hashed")
 
 	query := fmt.Sprintf("SELECT * FROM c WHERE c.organization_id = '%s' AND c.token_value = '%s' AND (c.entity_type = 'service_key' OR NOT IS_DEFINED(c.entity_type))", organizationID, hashed)
-	logger.Debug("executing query", "query", query)
 
 	queryPager := r.container.NewQueryItemsPager(query, azcosmos.NewPartitionKeyString(organizationID), nil)
 
-	pageCount := 0
 	for queryPager.More() {
-		pageCount++
-		logger.Debug("fetching next page", "page", pageCount)
-
 		queryResponse, err := queryPager.NextPage(ctx)
 		if err != nil {
-			logger.Error("failed to fetch query page", "error", err, "page", pageCount)
 			return nil, handleCosmosError(err)
 		}
 
-		logger.Debug("query page fetched", "page", pageCount, "item_count", len(queryResponse.Items))
-
-		for i, item := range queryResponse.Items {
+		for _, item := range queryResponse.Items {
 			var token types.ServiceKey
 			if err := json.Unmarshal(item, &token); err != nil {
-				logger.Error("failed to unmarshal token", "error", err, "item_index", i)
 				return nil, fmt.Errorf("failed to unmarshal token: %w", err)
 			}
 
-			logger.Info("service key found",
-				"service_key_id", token.ID,
-				"organization_id", token.OrganizationID,
-				"entity_type", token.EntityType,
-			)
 			return &token, nil
 		}
 	}
 
-	logger.Warn("service key not found in organization", "total_pages", pageCount)
 	return nil, fmt.Errorf("token not found")
 }
 

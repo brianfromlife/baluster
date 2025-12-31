@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"fmt"
-	"log/slog"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -69,23 +68,10 @@ func (h *AuthHandler) GitHubOAuth(w http.ResponseWriter, r *http.Request) {
 
 // GitHubOAuthCallback handles GitHub OAuth callback
 func (h *AuthHandler) GitHubOAuthCallback(w http.ResponseWriter, r *http.Request) {
-	logger := slog.Default().With(
-		"method", r.Method,
-		"path", r.URL.Path,
-		"remote_addr", r.RemoteAddr,
-	)
-
 	code := r.URL.Query().Get("code")
 	state := r.URL.Query().Get("state")
 
-	logger.Info("GitHub OAuth callback received",
-		"has_code", code != "",
-		"has_state", state != "",
-		"state", state,
-	)
-
 	if code == "" || state == "" {
-		logger.Error("missing code or state in callback")
 		httputil.Error(w, http.StatusBadRequest, fmt.Errorf("missing code or state"))
 		return
 	}
@@ -95,22 +81,11 @@ func (h *AuthHandler) GitHubOAuthCallback(w http.ResponseWriter, r *http.Request
 		State: state,
 	}
 
-	logger.Info("calling GitHubOAuthCallback")
 	output, err := admin.GitHubOAuthCallback(r.Context(), h.githubOAuth, h.stateCache, h.jwtConfig, h.userRepo, input)
 	if err != nil {
-		logger.Error("GitHubOAuthCallback failed",
-			"error", err,
-			"error_type", fmt.Sprintf("%T", err),
-		)
 		httputil.Error(w, http.StatusInternalServerError, err)
 		return
 	}
-
-	logger.Info("GitHub OAuth callback successful",
-		"user_id", output.User.ID,
-		"github_id", output.User.GitHubID,
-		"username", output.User.Username,
-	)
 
 	httputil.Success(w, http.StatusOK, map[string]any{
 		"token": output.SessionToken,
