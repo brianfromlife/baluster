@@ -40,13 +40,12 @@ func main() {
 		Endpoint: cfg.CosmosEndpoint,
 		Key:      cfg.CosmosKey,
 		Database: cfg.CosmosDatabase,
-	}, logger)
+	})
 	if err != nil {
 		logger.Error("failed to initialize Cosmos DB client", "error", err)
 		os.Exit(1)
 	}
 
-	// Initialize repositories (only what we need for ValidateAccess)
 	serviceKeyRepo, err := storage.NewServiceKeyRepository(cosmosClient)
 	if err != nil {
 		logger.Error("failed to initialize service key repository", "error", err)
@@ -71,7 +70,6 @@ func main() {
 
 	mux.Handle(accessPath, accessHandlerHTTP)
 
-	// Health check
 	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte("OK"))

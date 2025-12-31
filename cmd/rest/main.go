@@ -38,7 +38,7 @@ func main() {
 		Endpoint: cfg.CosmosEndpoint,
 		Key:      cfg.CosmosKey,
 		Database: cfg.CosmosDatabase,
-	}, logger)
+	})
 	if err != nil {
 		logger.Error("failed to initialize Cosmos DB client", "error", err)
 		os.Exit(1)

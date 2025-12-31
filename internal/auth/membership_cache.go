@@ -4,7 +4,6 @@ import (
 	"time"
 )
 
-// MembershipCache provides thread-safe in-memory caching for organization membership checks
 type MembershipCache struct {
 	cache *Cache[bool]
 	ttl   time.Duration

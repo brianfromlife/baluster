@@ -5,7 +5,6 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"fmt"
-	"log/slog"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/data/azcosmos"
@@ -14,7 +13,6 @@ import (
 type Client struct {
 	client     *azcosmos.Client
 	database   *azcosmos.DatabaseClient
-	logger     *slog.Logger
 	containers map[string]*azcosmos.ContainerClient
 }
 
@@ -24,7 +22,7 @@ type Config struct {
 	Database string
 }
 
-func NewClient(ctx context.Context, cfg Config, logger *slog.Logger) (*Client, error) {
+func NewClient(ctx context.Context, cfg Config) (*Client, error) {
 	cred, err := azcosmos.NewKeyCredential(cfg.Key)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create credential: %w", err)
@@ -43,7 +41,6 @@ func NewClient(ctx context.Context, cfg Config, logger *slog.Logger) (*Client, e
 	c := &Client{
 		client:     client,
 		database:   database,
-		logger:     logger,
 		containers: make(map[string]*azcosmos.ContainerClient),
 	}
 
