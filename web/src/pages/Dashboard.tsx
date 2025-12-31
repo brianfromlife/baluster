@@ -41,74 +41,48 @@ interface ApiKey {
 
 export function DashboardPage() {
   const { user, loading: authLoading, refetchUser } = useAuth();
-
-  // Get organization from user context (already fetched via /me endpoint)
   const organization = user?.organization;
 
   // Show onboarding if user has no organization (only when we've confirmed there is none)
   const hasOrganization = !!organization;
   const showOnboarding = !authLoading && !hasOrganization;
 
-  // Fetch applications for the organization
-  const { data: applicationsData, isLoading: appsLoading } = useQuery<
-    { applications?: Application[] } | Application[]
-  >({
+  const { data: applicationsResponse, isLoading: appsLoading } = useQuery<{
+    applications: Application[];
+  }>({
     queryKey: ["applications", organization?.id],
     queryFn: async () => {
-      if (!organization?.id) return [];
-
-      const response = await api.applications.list(organization.id);
-      return response?.applications || [];
+      if (!organization?.id) return { applications: [] };
+      return api.applications.list(organization.id);
     },
     enabled: hasOrganization && !authLoading,
   });
 
-  // Ensure allApplications is always an array
-  const allApplications = Array.isArray(applicationsData)
-    ? applicationsData
-    : Array.isArray(applicationsData?.applications)
-    ? applicationsData.applications
-    : [];
+  const allApplications = applicationsResponse?.applications || [];
 
-  // Fetch service keys for the organization
-  const { data: serviceKeysData, isLoading: keysLoading } = useQuery<
-    { service_keys?: ServiceKey[] } | ServiceKey[]
-  >({
+  const { data: serviceKeysData, isLoading: keysLoading } = useQuery<ServiceKey[]>({
     queryKey: ["serviceKeys", organization?.id],
     queryFn: async () => {
       if (!organization?.id) return [];
-
-      return api.serviceKeys.list(organization.id);
+      const result = await api.serviceKeys.list(organization.id);
+      return Array.isArray(result) ? result : [];
     },
     enabled: hasOrganization && !authLoading,
   });
 
-  // Ensure serviceKeys is always an array
-  const serviceKeys = Array.isArray(serviceKeysData)
-    ? serviceKeysData
-    : Array.isArray(serviceKeysData?.service_keys)
-    ? serviceKeysData.service_keys
-    : [];
+  const serviceKeys = Array.isArray(serviceKeysData) ? serviceKeysData : [];
 
-  // Fetch API keys for the organization
-  const { data: apiKeysData, isLoading: apiKeysLoading } = useQuery<
-    { api_keys?: ApiKey[] } | ApiKey[]
-  >({
+  const { data: apiKeysData, isLoading: apiKeysLoading } = useQuery<ApiKey[]>({
     queryKey: ["apiKeys", organization?.id],
     queryFn: async () => {
       if (!organization?.id) return [];
-
-      return api.apiKeys.list(organization.id);
+      const result = await api.apiKeys.list(organization.id);
+      return Array.isArray(result) ? result : [];
     },
     enabled: hasOrganization && !authLoading,
   });
 
-  // Ensure apiKeys is always an array
-  const apiKeys = Array.isArray(apiKeysData)
-    ? apiKeysData
-    : Array.isArray(apiKeysData?.api_keys)
-    ? apiKeysData.api_keys
-    : [];
+  const apiKeys = Array.isArray(apiKeysData) ? apiKeysData : [];
 
   const isLoading = authLoading || appsLoading || keysLoading || apiKeysLoading;
 
@@ -153,28 +127,44 @@ export function DashboardPage() {
               </Link>
             </div>
           ) : (
-            <div className="applications-grid">
-              {allApplications?.map((app) => (
-                <div key={app.id} className="application-card">
-                  <div className="card-header">
-                    <h3 className="card-title">{app.name}</h3>
-                    <span className="card-id">{app.id.slice(0, 8)}...</span>
-                  </div>
-                  {app.description && <p className="card-description">{app.description}</p>}
-                  {app.permissions && app.permissions.length > 0 && (
-                    <div className="card-permissions">
-                      <span className="permissions-label">
-                        {app.permissions.length} permission{app.permissions.length !== 1 ? "s" : ""}
-                      </span>
-                    </div>
-                  )}
-                  <div className="card-footer">
-                    <Link to={`/applications/${app.id}`} className="card-link">
-                      View details →
-                    </Link>
-                  </div>
-                </div>
-              ))}
+            <div className="table-container">
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>ID</th>
+                    <th>Description</th>
+                    <th>Permissions</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {allApplications?.map((app) => (
+                    <tr key={app.id}>
+                      <td className="table-cell-name">{app.name}</td>
+                      <td className="table-cell-id">{app.id.slice(0, 8)}...</td>
+                      <td className="table-cell-description">
+                        {app.description || <span className="text-muted">—</span>}
+                      </td>
+                      <td>
+                        {app.permissions && app.permissions.length > 0 ? (
+                          <span className="badge">
+                            {app.permissions.length} permission
+                            {app.permissions.length !== 1 ? "s" : ""}
+                          </span>
+                        ) : (
+                          <span className="text-muted">—</span>
+                        )}
+                      </td>
+                      <td>
+                        <Link to={`/applications/${app.id}`} className="table-link">
+                          View details →
+                        </Link>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
 
@@ -219,28 +209,46 @@ export function DashboardPage() {
               )}
             </div>
           ) : (
-            <div className="service-keys-grid">
-              {serviceKeys?.map((key) => (
-                <div key={key.id} className="service-key-card">
-                  <div className="card-header">
-                    <h3 className="card-title">{key.name}</h3>
-                    <span className="card-id">{key.id.slice(0, 8)}...</span>
-                  </div>
-                  {key.applications && key.applications.length > 0 && (
-                    <div className="card-applications">
-                      <span className="applications-label">
-                        {key.applications.length} application
-                        {key.applications.length !== 1 ? "s" : ""}
-                      </span>
-                    </div>
-                  )}
-                  <div className="card-footer">
-                    <span className="card-meta">
-                      Created {new Date(key.created_at).toLocaleDateString()}
-                    </span>
-                  </div>
-                </div>
-              ))}
+            <div className="table-container">
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>ID</th>
+                    <th>Applications</th>
+                    <th>Expires</th>
+                    <th>Created</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {serviceKeys?.map((key) => (
+                    <tr key={key.id}>
+                      <td className="table-cell-name">{key.name}</td>
+                      <td className="table-cell-id">{key.id.slice(0, 8)}...</td>
+                      <td>
+                        {key.applications && key.applications.length > 0 ? (
+                          <span className="badge">
+                            {key.applications.length} application
+                            {key.applications.length !== 1 ? "s" : ""}
+                          </span>
+                        ) : (
+                          <span className="text-muted">—</span>
+                        )}
+                      </td>
+                      <td>
+                        {key.expires_at ? (
+                          new Date(key.expires_at).toLocaleDateString()
+                        ) : (
+                          <span className="text-muted">Never</span>
+                        )}
+                      </td>
+                      <td className="table-cell-date">
+                        {new Date(key.created_at).toLocaleDateString()}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
 
@@ -285,27 +293,37 @@ export function DashboardPage() {
               )}
             </div>
           ) : (
-            <div className="service-keys-grid">
-              {apiKeys?.map((key) => (
-                <div key={key.id} className="service-key-card">
-                  <div className="card-header">
-                    <h3 className="card-title">{key.name}</h3>
-                    <span className="card-id">{key.id.slice(0, 8)}...</span>
-                  </div>
-                  {key.expires_at && (
-                    <div className="card-applications">
-                      <span className="applications-label">
-                        Expires {new Date(key.expires_at).toLocaleDateString()}
-                      </span>
-                    </div>
-                  )}
-                  <div className="card-footer">
-                    <span className="card-meta">
-                      Created {new Date(key.created_at).toLocaleDateString()}
-                    </span>
-                  </div>
-                </div>
-              ))}
+            <div className="table-container">
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>ID</th>
+                    <th>Application ID</th>
+                    <th>Expires</th>
+                    <th>Created</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {apiKeys?.map((key) => (
+                    <tr key={key.id}>
+                      <td className="table-cell-name">{key.name}</td>
+                      <td className="table-cell-id">{key.id.slice(0, 8)}...</td>
+                      <td className="table-cell-id">{key.application_id.slice(0, 8)}...</td>
+                      <td>
+                        {key.expires_at ? (
+                          new Date(key.expires_at).toLocaleDateString()
+                        ) : (
+                          <span className="text-muted">Never</span>
+                        )}
+                      </td>
+                      <td className="table-cell-date">
+                        {new Date(key.created_at).toLocaleDateString()}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
         </section>
