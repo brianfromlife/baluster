@@ -1,0 +1,199 @@
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: 1rem;
+}
+
+.modalContent {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  max-width: 600px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 2rem 2rem 1rem 2rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.modalTitle {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #2d3748;
+  margin: 0;
+}
+
+.modalCloseButton {
+  background: transparent;
+  border: none;
+  color: #718096;
+  cursor: pointer;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.modalCloseButton:hover {
+  background: #f7fafc;
+  color: #2d3748;
+}
+
+.modalCloseButton svg {
+  display: block;
+}
+
+.modalBody {
+  padding: 2rem;
+  flex: 1;
+}
+
+.modalDescription {
+  color: #718096;
+  line-height: 1.6;
+  margin: 0 0 1.5rem 0;
+  font-size: 1rem;
+}
+
+.tokenDisplay {
+  margin-top: 1rem;
+}
+
+.tokenLabel {
+  display: block;
+  font-weight: 500;
+  color: #4a5568;
+  font-size: 0.95rem;
+  margin-bottom: 0.5rem;
+}
+
+.tokenInputGroup {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.tokenInput {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-family: "Monaco", "Courier New", monospace;
+  background: #f7fafc;
+  color: #2d3748;
+  word-break: break-all;
+}
+
+.copyButton {
+  padding: 0.75rem 1.5rem;
+  background: #667eea;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.copyButton:hover {
+  background: #5568d3;
+}
+
+.tokenWarning {
+  margin-top: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: #fff5e6;
+  border: 1px solid #ffd700;
+  border-radius: 8px;
+  color: #856404;
+  font-size: 0.9rem;
+  margin-bottom: 0;
+}
+
+.modalFooter {
+  padding: 1rem 2rem 2rem 2rem;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.modalButton {
+  padding: 0.875rem 1.5rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.modalButton:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.modalButton:active {
+  transform: translateY(0);
+}
+
+@media (max-width: 640px) {
+  .modalContent {
+    max-width: 100%;
+    margin: 1rem;
+  }
+
+  .modalHeader {
+    padding: 1.5rem 1.5rem 1rem 1.5rem;
+  }
+
+  .modalBody {
+    padding: 1.5rem;
+  }
+
+  .modalFooter {
+    padding: 1rem 1.5rem 1.5rem 1.5rem;
+  }
+
+  .modalTitle {
+    font-size: 1.25rem;
+  }
+
+  .tokenInputGroup {
+    flex-direction: column;
+  }
+
+  .copyButton {
+    width: 100%;
+  }
+
+  .modalButton {
+    width: 100%;
+  }
+}
+

@@ -1,0 +1,247 @@
+.createApiKey {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  width: 100%;
+  padding: 2rem 0;
+}
+
+.createApiKeyContent {
+  max-width: 700px;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  padding: 3rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.createApiKeyTitle {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #2d3748;
+  margin: 0 0 1rem 0;
+}
+
+.createApiKeyDescription {
+  color: #718096;
+  line-height: 1.6;
+  margin: 0 0 2.5rem 0;
+}
+
+.createApiKeyForm {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.formLabel {
+  font-weight: 500;
+  color: #4a5568;
+  font-size: 0.95rem;
+}
+
+.formInput {
+  padding: 0.75rem 1rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-family: inherit;
+  transition: all 0.2s;
+  background: #ffffff;
+  color: #2d3748;
+}
+
+.formInput:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.formInput:disabled {
+  background: #f7fafc;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.formHint {
+  font-size: 0.875rem;
+  color: #718096;
+  margin: 0.25rem 0 0 0;
+}
+
+.formError {
+  padding: 0.75rem 1rem;
+  background: #fed7d7;
+  border: 1px solid #fc8181;
+  border-radius: 8px;
+  color: #c53030;
+  font-size: 0.9rem;
+}
+
+.formActions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 0.5rem;
+}
+
+.formSubmit {
+  padding: 0.875rem 1.5rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.formSubmit:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.formSubmit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.formCancel {
+  padding: 0.875rem 1.5rem;
+  background: #f7fafc;
+  color: #4a5568;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.formCancel:hover:not(:disabled) {
+  background: #edf2f7;
+  border-color: #cbd5e0;
+}
+
+.formCancel:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.tokenDisplay {
+  margin-bottom: 2rem;
+}
+
+.tokenInputGroup {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.tokenInput {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-family: "Monaco", "Courier New", monospace;
+  background: #f7fafc;
+  color: #2d3748;
+  word-break: break-all;
+}
+
+.copyButton {
+  padding: 0.75rem 1.5rem;
+  background: #667eea;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.copyButton:hover {
+  background: #5568d3;
+}
+
+.tokenWarning {
+  margin-top: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: #fff5e6;
+  border: 1px solid #ffd700;
+  border-radius: 8px;
+  color: #856404;
+  font-size: 0.9rem;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 2rem 0;
+}
+
+.emptyState p {
+  font-size: 1.125rem;
+  color: #2d3748;
+  margin: 0 0 0.5rem 0;
+}
+
+.emptyStateSubtitle {
+  color: #718096;
+  line-height: 1.6;
+  margin: 0 0 1.5rem 0 !important;
+}
+
+.emptyStateLink {
+  display: inline-block;
+  padding: 0.875rem 1.5rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.emptyState-link:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+@media (max-width: 640px) {
+  .createApiKeyContent {
+    padding: 2rem 1.5rem;
+  }
+
+  .createApiKeyTitle {
+    font-size: 1.5rem;
+  }
+
+  .formActions {
+    flex-direction: column;
+  }
+
+  .formSubmit,
+  .formCancel {
+    width: 100%;
+  }
+
+  .tokenInputGroup {
+    flex-direction: column;
+  }
+
+  .copyButton {
+    width: 100%;
+  }
+}

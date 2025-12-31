@@ -1,0 +1,279 @@
+package storage
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"time"
+
+	"github.com/Azure/azure-sdk-for-go/sdk/data/azcosmos"
+	"github.com/brianfromlife/baluster/internal/types"
+)
+
+type ApiKeyRepository struct {
+	client    *Client
+	container *azcosmos.ContainerClient
+}
+
+func NewApiKeyRepository(client *Client) (*ApiKeyRepository, error) {
+	container, err := client.GetContainer("api_keys")
+	if err != nil {
+		return nil, err
+	}
+	return &ApiKeyRepository{
+		client:    client,
+		container: container,
+	}, nil
+}
+
+// Create creates a new API key with audit history
+func (r *ApiKeyRepository) Create(ctx context.Context, token *types.ApiKey, userID, githubID, username string) error {
+	token.TokenValue = HashToken(token.TokenValue)
+	token.PartitionKey = token.GetPartitionKey()
+
+	auditHistory := &types.AuditHistory{
+		ID:                GenerateID(),
+		OrganizationID:    token.OrganizationID,
+		EntityType:        "audit_history",
+		EntityID:          token.ID,
+		Action:            types.AuditActionCreated,
+		CreatedByUserID:   userID,
+		CreatedByGitHubID: githubID,
+		CreatedByUsername: username,
+		CreatedAt:         time.Now(),
+	}
+	auditHistory.PartitionKey = auditHistory.GetPartitionKey()
+
+	batch := r.container.NewTransactionalBatch(azcosmos.NewPartitionKeyString(token.PartitionKey))
+
+	// Add API key create
+	tokenItem, err := json.Marshal(token)
+	if err != nil {
+		return fmt.Errorf("failed to marshal token: %w", err)
+	}
+	batch.CreateItem(tokenItem, nil)
+
+	// Add audit history create
+	auditItem, err := json.Marshal(auditHistory)
+	if err != nil {
+		return fmt.Errorf("failed to marshal audit history: %w", err)
+	}
+	batch.CreateItem(auditItem, nil)
+
+	// Execute batch
+	resp, err := r.container.ExecuteTransactionalBatch(ctx, batch, nil)
+	if err != nil {
+		return handleCosmosError(err)
+	}
+
+	if !resp.Success {
+		return handleCosmosError(fmt.Errorf("batch operation failed"))
+	}
+
+	return nil
+}
+
+// Get retrieves an API key by ID using the organization ID as the partition key
+func (r *ApiKeyRepository) Get(ctx context.Context, organizationID, id string) (*types.ApiKey, error) {
+	itemResponse, err := r.container.ReadItem(ctx, azcosmos.NewPartitionKeyString(organizationID), id, nil)
+	if err != nil {
+		return nil, handleCosmosError(err)
+	}
+
+	var token types.ApiKey
+	if err := json.Unmarshal(itemResponse.Value, &token); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal API key: %w", err)
+	}
+
+	return &token, nil
+}
+
+// FindByTokenValue finds an API key by its hashed value (queries across all partitions)
+func (r *ApiKeyRepository) FindByTokenValue(ctx context.Context, tokenValue string) (*types.ApiKey, error) {
+	hashed := HashToken(tokenValue)
+	query := fmt.Sprintf("SELECT * FROM c WHERE c.token_value = '%s' AND (c.entity_type = 'api_key' OR NOT IS_DEFINED(c.entity_type))", hashed)
+	queryPager := r.container.NewQueryItemsPager(query, azcosmos.NewPartitionKey(), nil)
+
+	for queryPager.More() {
+		queryResponse, err := queryPager.NextPage(ctx)
+		if err != nil {
+			return nil, handleCosmosError(err)
+		}
+
+		for _, item := range queryResponse.Items {
+			var token types.ApiKey
+			if err := json.Unmarshal(item, &token); err != nil {
+				return nil, fmt.Errorf("failed to unmarshal API key: %w", err)
+			}
+			return &token, nil
+		}
+	}
+
+	return nil, fmt.Errorf("token not found")
+}
+
+// CountByOrganization counts API keys for an organization
+func (r *ApiKeyRepository) CountByOrganization(ctx context.Context, organizationID string) (int, error) {
+	query := fmt.Sprintf("SELECT VALUE COUNT(1) FROM c WHERE c.organization_id = '%s' AND (c.entity_type = 'api_key' OR NOT IS_DEFINED(c.entity_type))", organizationID)
+	queryPager := r.container.NewQueryItemsPager(query, azcosmos.NewPartitionKeyString(organizationID), nil)
+
+	if !queryPager.More() {
+		return 0, nil
+	}
+
+	queryResponse, err := queryPager.NextPage(ctx)
+	if err != nil {
+		return 0, handleCosmosError(err)
+	}
+
+	if len(queryResponse.Items) == 0 {
+		return 0, nil
+	}
+
+	var result float64
+	if err := json.Unmarshal(queryResponse.Items[0], &result); err != nil {
+		return 0, fmt.Errorf("failed to unmarshal count: %w", err)
+	}
+
+	return int(result), nil
+}
+
+// ListByOrganization lists API keys for an organization
+func (r *ApiKeyRepository) ListByOrganization(ctx context.Context, organizationID string) ([]*types.ApiKey, error) {
+	query := fmt.Sprintf("SELECT * FROM c WHERE c.organization_id = '%s' AND (c.entity_type = 'api_key' OR NOT IS_DEFINED(c.entity_type))", organizationID)
+	queryPager := r.container.NewQueryItemsPager(query, azcosmos.NewPartitionKeyString(organizationID), nil)
+
+	var tokens []*types.ApiKey
+	for queryPager.More() {
+		queryResponse, err := queryPager.NextPage(ctx)
+		if err != nil {
+			return nil, handleCosmosError(err)
+		}
+
+		for _, item := range queryResponse.Items {
+			var token types.ApiKey
+			if err := json.Unmarshal(item, &token); err != nil {
+				return nil, fmt.Errorf("failed to unmarshal API key: %w", err)
+			}
+			tokens = append(tokens, &token)
+		}
+	}
+
+	return tokens, nil
+}
+
+// Update updates an API key with audit history
+func (r *ApiKeyRepository) Update(ctx context.Context, token *types.ApiKey, userID, githubID, username string) error {
+	token.PartitionKey = token.GetPartitionKey()
+
+	// Create audit history record
+	auditHistory := &types.AuditHistory{
+		ID:                GenerateID(),
+		OrganizationID:    token.OrganizationID,
+		EntityType:        "audit_history",
+		EntityID:          token.ID,
+		Action:            types.AuditActionUpdated,
+		CreatedByUserID:   userID,
+		CreatedByGitHubID: githubID,
+		CreatedByUsername: username,
+		CreatedAt:         time.Now(),
+	}
+	auditHistory.PartitionKey = auditHistory.GetPartitionKey()
+
+	// Create transactional batch
+	batch := r.container.NewTransactionalBatch(azcosmos.NewPartitionKeyString(token.PartitionKey))
+
+	// Add API key update
+	tokenItem, err := json.Marshal(token)
+	if err != nil {
+		return fmt.Errorf("failed to marshal token: %w", err)
+	}
+	batch.ReplaceItem(token.ID, tokenItem, nil)
+
+	// Add audit history create
+	auditItem, err := json.Marshal(auditHistory)
+	if err != nil {
+		return fmt.Errorf("failed to marshal audit history: %w", err)
+	}
+	batch.CreateItem(auditItem, nil)
+
+	// Execute batch
+	resp, err := r.container.ExecuteTransactionalBatch(ctx, batch, nil)
+	if err != nil {
+		return handleCosmosError(err)
+	}
+
+	if !resp.Success {
+		return handleCosmosError(fmt.Errorf("batch operation failed"))
+	}
+
+	return nil
+}
+
+// Delete deletes an API key with audit history
+func (r *ApiKeyRepository) Delete(ctx context.Context, token *types.ApiKey, userID, githubID, username string) error {
+	token.PartitionKey = token.GetPartitionKey()
+
+	// Create audit history record
+	auditHistory := &types.AuditHistory{
+		ID:                GenerateID(),
+		OrganizationID:    token.OrganizationID,
+		EntityType:        "audit_history",
+		EntityID:          token.ID,
+		Action:            types.AuditActionDeleted,
+		CreatedByUserID:   userID,
+		CreatedByGitHubID: githubID,
+		CreatedByUsername: username,
+		CreatedAt:         time.Now(),
+	}
+	auditHistory.PartitionKey = auditHistory.GetPartitionKey()
+
+	// Create transactional batch
+	batch := r.container.NewTransactionalBatch(azcosmos.NewPartitionKeyString(token.PartitionKey))
+
+	// Add API key delete
+	batch.DeleteItem(token.ID, nil)
+
+	// Add audit history create
+	auditItem, err := json.Marshal(auditHistory)
+	if err != nil {
+		return fmt.Errorf("failed to marshal audit history: %w", err)
+	}
+	batch.CreateItem(auditItem, nil)
+
+	// Execute batch
+	resp, err := r.container.ExecuteTransactionalBatch(ctx, batch, nil)
+	if err != nil {
+		return handleCosmosError(err)
+	}
+
+	if !resp.Success {
+		return handleCosmosError(fmt.Errorf("batch operation failed"))
+	}
+
+	return nil
+}
+
+// GetHistory retrieves audit history for an API key
+func (r *ApiKeyRepository) GetHistory(ctx context.Context, organizationID, entityID string) ([]*types.AuditHistory, error) {
+	query := fmt.Sprintf("SELECT * FROM c WHERE c.organization_id = '%s' AND c.entity_type = 'audit_history' AND c.entity_id = '%s' ORDER BY c.created_at DESC", organizationID, entityID)
+	queryPager := r.container.NewQueryItemsPager(query, azcosmos.NewPartitionKeyString(organizationID), nil)
+
+	var history []*types.AuditHistory
+	for queryPager.More() {
+		queryResponse, err := queryPager.NextPage(ctx)
+		if err != nil {
+			return nil, handleCosmosError(err)
+		}
+
+		for _, item := range queryResponse.Items {
+			var audit types.AuditHistory
+			if err := json.Unmarshal(item, &audit); err != nil {
+				return nil, fmt.Errorf("failed to unmarshal audit history: %w", err)
+			}
+			history = append(history, &audit)
+		}
+	}
+
+	return history, nil
+}

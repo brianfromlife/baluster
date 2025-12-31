@@ -1,0 +1,12 @@
+version: v2
+modules:
+  - path: baluster/v1
+    name: buf.build/brianfromlife/baluster
+breaking:
+  use:
+    - FILE
+lint:
+  use:
+    - DEFAULT
+  except:
+    - PACKAGE_VERSION_SUFFIX

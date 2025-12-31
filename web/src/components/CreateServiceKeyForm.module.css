@@ -1,0 +1,305 @@
+.createServiceKey {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  width: 100%;
+  padding: 2rem 0;
+}
+
+.createServiceKeyContent {
+  max-width: 700px;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  padding: 3rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.createServiceKeyTitle {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #2d3748;
+  margin: 0 0 1rem 0;
+}
+
+.createServiceKeyDescription {
+  color: #718096;
+  line-height: 1.6;
+  margin: 0 0 2.5rem 0;
+}
+
+.createServiceKeyForm {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.formLabel {
+  font-weight: 500;
+  color: #4a5568;
+  font-size: 0.95rem;
+}
+
+.formInput {
+  padding: 0.75rem 1rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-family: inherit;
+  transition: all 0.2s;
+  background: #ffffff;
+  color: #2d3748;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.formInput:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.formInput:disabled {
+  background: #f7fafc;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.typeaheadContainer {
+  position: relative;
+  width: 100%;
+}
+
+.typeaheadDropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background: white;
+  border: 2px solid #e2e8f0;
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  max-height: 300px;
+  overflow-y: auto;
+  margin-top: -2px;
+}
+
+.typeaheadItem {
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  transition: background 0.15s;
+  border-bottom: 1px solid #f7fafc;
+}
+
+.typeaheadItem:last-child {
+  border-bottom: none;
+}
+
+.typeaheadItem:hover {
+  background: #f7fafc;
+}
+
+.typeaheadItemName {
+  font-weight: 500;
+  color: #2d3748;
+  font-size: 0.95rem;
+}
+
+.typeaheadItemDesc {
+  color: #718096;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+.selectedApplications {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.selectedApplication {
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 1.25rem;
+  background: #f9fafb;
+}
+
+.selectedAppHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.75rem;
+}
+
+.selectedAppName {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #2d3748;
+  margin: 0;
+}
+
+.removeAppButton {
+  background: #fc8181;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.removeAppButton svg {
+  display: block;
+}
+
+.removeAppButton:hover:not(:disabled) {
+  background: #f56565;
+}
+
+.removeAppButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.selectedAppDescription {
+  color: #718096;
+  font-size: 0.9rem;
+  margin: 0 0 1rem 0;
+}
+
+.permissionsCheckboxes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.permissionCheckbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.permissionCheckbox input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #667eea;
+}
+
+.permissionCheckbox span {
+  font-size: 0.9rem;
+  color: #4a5568;
+}
+
+.permissionCheckbox input[type="checkbox"]:disabled + span {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.noPermissions {
+  color: #a0aec0;
+  font-size: 0.875rem;
+  font-style: italic;
+  margin: 0;
+}
+
+.formError {
+  padding: 0.75rem 1rem;
+  background: #fed7d7;
+  border: 1px solid #fc8181;
+  border-radius: 8px;
+  color: #c53030;
+  font-size: 0.9rem;
+}
+
+.formActions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.formCancel {
+  padding: 0.875rem 1.5rem;
+  background: #ffffff;
+  color: #4a5568;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.formCancel:hover:not(:disabled) {
+  background: #f7fafc;
+  border-color: #cbd5e0;
+}
+
+.formCancel:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.formSubmit {
+  padding: 0.875rem 1.5rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.formSubmit:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.formSubmit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+@media (max-width: 640px) {
+  .createServiceKey {
+    padding: 1rem 0;
+  }
+
+  .createServiceKeyContent {
+    padding: 2rem 1.5rem;
+  }
+
+  .createServiceKeyTitle {
+    font-size: 1.5rem;
+  }
+
+  .formActions {
+    flex-direction: column-reverse;
+  }
+
+  .formCancel,
+  .formSubmit {
+    width: 100%;
+  }
+}
