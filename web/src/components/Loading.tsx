@@ -1,15 +1,23 @@
 import { useEffect, useState } from "react";
 import styles from "./Loading.module.css";
 
+const messages = [
+  "Loading...",
+  "Warming up the servers...",
+  "Almost there...",
+  "Just a moment...",
+  "Preparing everything...",
+];
+
 export function Loading() {
-  const [showWarmingUp, setShowWarmingUp] = useState(false);
+  const [messageIndex, setMessageIndex] = useState(0);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowWarmingUp(true);
-    }, 750);
+    const interval = setInterval(() => {
+      setMessageIndex((prevIndex) => (prevIndex + 1) % messages.length);
+    }, 2300);
 
-    return () => clearTimeout(timer);
+    return () => clearInterval(interval);
   }, []);
 
   return (
@@ -19,8 +27,8 @@ export function Loading() {
         <div className={styles.spinnerDot}></div>
         <div className={styles.spinnerDot}></div>
       </div>
-      <div className={styles.message}>
-        {showWarmingUp ? "Warming up the servers..." : "Loading..."}
+      <div key={messageIndex} className={styles.message}>
+        {messages[messageIndex]}
       </div>
     </div>
   );
