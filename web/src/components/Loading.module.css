@@ -1,0 +1,58 @@
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  min-height: 100vh;
+  padding: 4rem 2rem;
+  color: white;
+  text-align: center;
+}
+
+.message {
+  font-size: 1.125rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.95);
+  transition: opacity 0.3s ease;
+}
+
+.spinner {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: center;
+}
+
+.spinnerDot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+.spinnerDot:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.spinnerDot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.spinnerDot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.4;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+

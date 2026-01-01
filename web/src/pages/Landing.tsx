@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { api } from "@/lib/api";
+import { Loading } from "@/components/Loading";
 import "./Landing.css";
 
 export function LandingPage() {
@@ -32,7 +33,7 @@ export function LandingPage() {
   if (loading) {
     return (
       <div className="landing-page">
-        <div className="loading-state">Loading...</div>
+        <Loading />
       </div>
     );
   }
